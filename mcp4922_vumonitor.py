@@ -82,7 +82,7 @@ GPIO.setwarnings(False)
 dac = MCP4922()
 
 # Here we set the current network traffic in relation to our maximum bandwidth
-# in this example, we expect a maximum (net_max) of 15 MB/s 
+# in this example, we expect a maximum (net_max) of 15 MB/s
 # to make this part not too complicated, the receiving traffic and sending traffic is just added together
 # then divided, finally we normalize the value on a scale from 0 to 100
 
@@ -100,8 +100,8 @@ def net_coeffiecient(bytes_received_after, bytes_received_before, bytes_send_aft
     return x
 
 # This function calculates the DAC Value based on limited growth, that gives us a slight curve,
-# instead of strictly linear function. 
-# You can adjust k and S at the top of this file 
+# instead of strictly linear function.
+# You can adjust k and S at the top of this file
 
 def B(t):
     return S - (S - B0)*math.exp(-k*t)
@@ -149,10 +149,10 @@ def percent2dac(n):
 # Function to poll the current network usage and CPU usage
 def poll(interval):
     """Retrieve raw stats within an interval window."""
-    net_before = psutil.net_io_counters()    
+    net_before = psutil.net_io_counters()
     # psutil.cpu_percent() includes a sleep for 1 second (interval)
     dac_cpu = psutil.cpu_percent(interval)
-    net_after = psutil.net_io_counters()    
+    net_after = psutil.net_io_counters()
     dac_network = net_coeffiecient(net_after.bytes_recv, net_before.bytes_recv, net_after.bytes_sent, net_before.bytes_sent)
     return dac_network, dac_cpu
 
@@ -174,7 +174,7 @@ def main():
             interval = 1 # Poll every second
             counter += 1
             #print("Counter: {}" .format(counter))
-            
+            time.sleep(0.01) # reduce strain on CPU
             # count to your desired period and then update the DAC for the VU meter
             if counter == polling_max:
                 dac.setVoltage(net_channel, percent2dac(net_total / polling_max)) # the magic happens here!
@@ -183,6 +183,7 @@ def main():
                 net_total = 0
                 cpu_total = 0
                 #print(counter)
+                time.sleep(0.01) # Reduce strain on CPU
     except (KeyboardInterrupt, SystemExit):
         """ Cleaning Up """
         dac.setVoltage(0, 0)
