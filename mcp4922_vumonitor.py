@@ -150,8 +150,10 @@ def percent2dac(n):
 def poll(interval):
     """Retrieve raw stats within an interval window."""
     net_before = psutil.net_io_counters()
+    time.sleep(0.01)
     # psutil.cpu_percent() includes a sleep for 1 second (interval)
     dac_cpu = psutil.cpu_percent(interval)
+    time.sleep(0.01)
     net_after = psutil.net_io_counters()
     dac_network = net_coeffiecient(net_after.bytes_recv, net_before.bytes_recv, net_after.bytes_sent, net_before.bytes_sent)
     return dac_network, dac_cpu
