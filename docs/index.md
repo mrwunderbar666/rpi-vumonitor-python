@@ -61,6 +61,9 @@ VU Meters operate in a quite low voltage of around 100 - 1000 mV. Therefore, the
 ### Let's get some basic measurements:
 
 1. Measure your VU Meter's internal resistance using a multimeter. My VU meter has an internal resistance of 655 Ω
+1. Attach DuPont Wires to your VU Meter
+
+    I directly soldered female DuPont Wires to my meters
 1. Connect your VU Meter to your bench power supply and have at least 3 trimpots in series, but do not switch on your power supply yet. My bench power supply lowest reliable voltage is 1.24 V. If your's can go lower, it is even better.
 1. Set your trimpots to the highest resistance
 1. Attach your multimeter to the positive and negative terminals of your VU Meter
@@ -100,7 +103,7 @@ Therefore we can estimate:
 
 That you need an resistance of about **7000 Ohms** in order to drive your VU Meter properly with a 5V power supply.
 
-### Driving the VU Meter by the Raspberry Pi
+## 2: Considerations for driving the VU Meter by the Raspberry Pi
 
 Now that we understand the VU Meters, let's have a look at how to connect and drive them from the Raspberry Pi.
 
@@ -108,7 +111,7 @@ By default the RPi has a 3.3 V or 5 V supply rail. That would be total overkill 
 
 So let's have a look at how we can get that 3.3 V to a much lower value and also change the output value:
 
-#### PWM (Pulse Width Modulation)
+### PWM (Pulse Width Modulation)
 
 The simplest way to control the voltage (and effective current) applied to the VU Meter is by using PWM (Pulse Width Modulation).
 
@@ -119,7 +122,7 @@ There are two ways of creating a PWM Signal from the RPI:
 
 In the steps below, I will go into detail for both ways.
 
-#### DAC (Digital to Analog Converter)
+### DAC (Digital to Analog Converter)
 
 The RPi doesn't have any DAC integrated, so we need to hook one up. There are plenty of choices but also some considerations to make: 
 
@@ -148,3 +151,71 @@ At 12-bit we have 4096 steps of resolution:
 12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate of the needle at the end.
 
 I will go into different DACs at a later point. E.g. how many VU Meters we want to control is another consideration for choosing a DAC.
+
+## 3: Pulse Width Modulation (PWM)
+
+With help of the RPi.GPIO Library we can set the **frequency** and **duty cycle** for the pulses.
+
+#### Frequency
+Theoretically, the frequency should have no impact on the effective voltage applied through PWM. But after some experimentation I found that **200 Hz** is a good frequency for driving a VU Meter.
+
+#### Duty Cycle
+The duty cycle (_D_) dermines the effective voltage and current applied to the VU Meter. A duty cycle of 10 means that the voltage is applied 10% of the time. 100 equals 100% (duh!), so full voltage, and 0 equals 0% therefore 0 V.
+
+Using a small formula:
+
+    V_(Effective) = V_(Total) * D
+    
+or:
+
+    D = \frac{V_(Effective)}{V_(Total)}
+    
+We know that we want to get a maximum voltage of 0.443 V from a 3.3 V source. Therefore, we can calculate:
+
+    \frac{0.443 V}{3.3 V} = 0.134 = 13.4 %
+
+### Software PWM
+
+#### Wiring
+Very simple and easy to hook up the VU Meter to the RPi:
+
+1. Connect the positive end of the VU Meter to GPIO Pin 23 (Physical Pin 12)
+1. Connect the negative end to a GND Pin
+
+#### Code
+You can check out the [calibration tool in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/pwm_set.py) that let's you enter a duty cycle value and it will pulse the VU Meter at 200 Hz.
+
+In Python:
+
+```python
+import RPi.GPIO as GPIO # Standard GPIO module
+import time
+
+vu_pin = 23 # BCM23, Physical 12
+frequency = 200 # 200 Hz
+
+GPIO.setmode(GPIO.BCM) # Using Broadcom pin numbering scheme
+
+GPIO.setup(vu_pin, GPIO.OUT) # Setting the pin as output
+
+# When using GPIO in python, it is generally a good practice to use try: and except:
+
+try:
+    p = GPIO.PWM(vu_pin, frequency) # Creating the PWM Object at the vu_pin with our set frequency
+    p.start(0) # Starting the PWM with a duty cycle of 0
+    p.ChangeDutyCycle(10) # Pulsing the VU Meter with a duty cycle of 10 %
+    time.sleep(2) # Wait 2 seconds
+    p.stop() # stopping the PWM
+    GPIO.cleanup()
+    quit()
+except KeyboardInterrupt:
+    # Press CTRL + C to exit
+    # Cleanup
+    p.stop()
+    GPIO.cleanup()
+    pass
+```
+
+
+
+
