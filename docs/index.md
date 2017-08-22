@@ -192,7 +192,7 @@ except KeyboardInterrupt:
     pass
 ```
 
-If you execute this code, you should observer the needle of the VU-Meter to move almost to its maximum deflection (we calculated 13.4 % above for the total maximum)
+If you execute this code, you should observe the needle of the VU-Meter to move almost to its maximum deflection (we calculated 13.4 % above for the total maximum)
 
 We can also incrementally increase the Duty Cycle with the help of [this little script in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/pwm_test.py).
 
@@ -201,6 +201,8 @@ The result looks like this:
 # Insert GIF with jittery VU Meter
 
 Notice how the needles jitters and jumps occasionally. I guess this is caused by the software that doesn't produce a perfectly clean frequency of 200 Hz.
+
+Also consider that with software PWM, we have only 13 steps of control (maybe more if we use a floating PWM variable), which isn't a very high resolution.
 
 #### Reducing Jitter
 
@@ -255,13 +257,13 @@ It should move the VU Meter needle close to its maximum deflection and then retu
 
 # Insert Gif of VU Meter with Wiring Pi
 
-Notice how there is almost no jitter using the hardware PWM.
+Notice how there is almost no jitter using the hardware PWM. And now we also have up to 137 steps of control.
 
 ## 4: Digital to Analog Converter (DAC)
 
 With PWM we face some strong limitations: if we use software PWM we can use any GPIO pin, but get a lot of jitter. If we use hardware PWM we are limited to very few pins and two channels, but get almost no jitter.
 
-This is were the DAC comes in. It let's us control more VU Meters at a high level of accuracy.
+This is were the DAC comes in. It let's us control more VU Meters at a higher level of accuracy.
 
 ### Chosing a DAC
 
@@ -275,7 +277,7 @@ The cheaper DACs provide an 8-bit resolution, which means 256 steps:
 
     \frac{3300mV}{256} = 12.8 mV
 
-So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste.
+So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste, because there is not much gained from it comparing with PWM.
 
 At 10-bit we get 1024 steps:
 
@@ -289,7 +291,7 @@ At 12-bit we have 4096 steps of resolution:
     \frac{3300mV}{4096} = 0.8 mV
 
 
-12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate of the needle at the end.
+12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate signal with about 500 steps for the needle at the end.
 
 DACs also have a varying amount of channels. So the amount of channels depend on the amount of VU Meters you want to drive. And 12-bit DACs get significantly more expensive by increasing amount of channels.
 
