@@ -427,8 +427,167 @@ And we can observer the beauty:
 
 # Insert Gif of DAC VU Meters moving
 
-## 5: Linear vs Logarithmic Scaling
+## 6: Calibration
 
-## 6: Getting System Stats using psutil
+No matter which option you chose (PWM, DAC) you can use the code snippets above to calibrate and fine tune your VU Meters. Slowly increase the maximum PWM Duty Cycle or DAC Value until the VU Meter reaches its maximum deflection.
 
-## 7: Wrapping up
+## 7: Getting System Stats using psutil
+Now that we have calibrated the VU Meters we get very close to the finishing line. As we want the VU Meters to represent current system statistics, we have to extract the current system value and then translate it into a output value for the VU Meter.
+
+There is a very handy python module called [psutil](https://github.com/giampaolo/psutil) which is great for getting all kinds of system statistics. It can extract network stats, CPU usage, temperature, disk read and write stats and even more. So from here, it really depends on what values you want to display with the VU Meters.
+
+### TL;DR
+I will walk through the code below but if you're not interested you can skip this and go to the [Github repository with the complete code](https://github.com/mrwunderbar666/rpi-vumonitor-python).
+
+### CPU Usage
+
+Let's have a look at the CPU usage and how to utilize psutil in python:
+
+```python
+import sys
+import psutil # for monitoring system statistics
+
+try:
+    interval = 0 # First time, poll immediately
+    while True:
+        cpu_usage = psutil.cpu_percent(interval) # gauge the CPU usage and store it in a variable
+        print(cpu_usage) # Print the current CPU Usage in Percent
+        interval = 1 # poll every second
+except (KeyboardInterrupt, SystemExit):
+    sys.exit(0)
+```
+
+This snipped should print out the current CPU Usage in percent every second.
+
+We can now enhance the code and combine it with the VU Monitor. This example is for DAC users:
+
+```python
+import sys
+import psutil # for monitoring system statistics
+import RPi.GPIO as GPIO
+import MCP4922 # Custom MCP4922 Library
+
+GPIO.setmode(GPIO.BCM) # Setting up the GPIO Mode
+
+# DAC Setup
+dac = MCP4922()
+
+dac_max = 500 # Maximum DAC output, in this example 500 / 4096
+
+
+try:
+    interval = 0 # First time, poll immediately
+    dac.setVoltage(0, 0) # Setting a starting voltage of 0 at channel A
+    while True:
+        cpu_usage = psutil.cpu_percent(interval) # gauge the CPU usage and store it in a variable
+        print(cpu_usage) # Print the current CPU Usage in Percent
+        dac_value = cpu_usage / dac_max # calculate the dac value based on the CPU Usage in percent
+        dac.SetVoltage(0, dac_value) # output to the VU Meter
+        interval = 1 # poll every second
+except (KeyboardInterrupt, SystemExit):
+    # Cleanup
+    dac.setVoltage(0, 0)
+    dac.setVoltage(1, 0)
+    dac.shutdown(0)
+    dac.shutdown(1)
+    GPIO.cleanup()
+    sys.exit(0)
+```
+
+This small snipped is already fully functional and makes your VU Meter needle move according to the current CPU Usage.
+You can also adapt it for software / hardware PWM and change the `dac_max = 500` to e.g.  `pwm_max = 15` and adjust the setup according to the examples above.
+
+### Network usage
+
+This one is slightly trickier, because the linux system doesn't directly provide the current nework usage, but only the total bytes sent and received. So the code gets slightly more complex:
+
+```python
+import sys
+import psutil # for monitoring system statistics
+import time
+
+def network_poll(interval):
+    """Retrieve raw stats within an interval window."""
+    net_before = psutil.net_io_counters()
+    time.sleep(1) # wait one second
+    net_after = psutil.net_io_counters()
+    network_usage_received = net_after.bytes_recv - net_before.bytes_recv # Substracting the received bytes before and after
+    network_usage_sent = net_after.bytes_sent - net_before.bytes_sent # Substracting the sent bytes before and after
+    return network_usage_received, network_usage_sent
+
+try:
+    interval = 0 # First time, poll immediately
+    while True:
+        network_usage_received, network_usage_sent = network_poll(interval) # measure the network activitiy
+        print(network_usage_received) # Print the current bytes received
+        print(network_usage_sent) # Print the current bytes sent
+        interval = 1 # poll every second
+except (KeyboardInterrupt, SystemExit):
+    sys.exit(0)
+```
+
+This will print the current network usage in bytes received and sent. It is not very human-readable, but for our purpose it does the job.
+
+Now we apply the same principle as before, but this time, we have to translate the network usage differently. You could just assign one VU-Meter to represent incoming network traffic and a second one for the outgoing traffic. In the following example I will show a way to combine both stats into one by creating a coefficient:
+
+```python
+import sys
+import psutil # for monitoring system statistics
+import time
+
+import RPi.GPIO as GPIO
+import MCP4922 # Custom MCP4922 Library
+
+GPIO.setmode(GPIO.BCM) # Setting up the GPIO Mode
+
+# DAC Setup
+dac = MCP4922()
+
+# Network settings, maximum bandwidth is 15 MB/s so net_max = 15,000,000 bytes
+net_max = 15000000
+
+def net_coeffiecient(bytes_received_after, bytes_received_before, bytes_send_after, bytes_send_before):
+    net_current = ((bytes_received_after - bytes_received_before) + ( bytes_send_after - bytes_send_before))
+    x = (net_current / net_max) * 100
+    print("Current Network usage in percent is: {}" .format(x))
+    # Clamping the maximum percentage to 100
+    if x > 100:
+        return 100
+    elif x < 0:
+        return 0
+    else:
+        return x
+    return x
+
+def network_poll(interval):
+    """Retrieve raw stats within an interval window."""
+    net_before = psutil.net_io_counters()
+    time.sleep(1) # wait one second
+    net_after = psutil.net_io_counters()
+    # Feeding the values into the net coefficient function:
+    network_usage = net_coeffiecient(net_after.bytes_recv, net_before.bytes_recv, net_after.bytes_sent, net_before.bytes_sent)
+    # return the result 0 - 100 to the main function:
+    return network_usage
+
+try:
+    interval = 0 # First time, poll immediately
+    while True:
+        network_usage = network_poll(interval) # measure the network activitiy
+        dac_value = network_usage / dac_max # calculate the dac value based on the Netowrk Usage in percent
+        dac.SetVoltage(0, dac_value) # output to the VU Meter
+        interval = 1 # poll every second
+except (KeyboardInterrupt, SystemExit):
+    # Cleanup
+    dac.setVoltage(0, 0)
+    dac.setVoltage(1, 0)
+    dac.shutdown(0)
+    dac.shutdown(1)
+    GPIO.cleanup()
+    sys.exit(0)
+```
+
+
+## 8: Linear vs Logarithmic Scaling
+
+
+## 9: Wrapping up
