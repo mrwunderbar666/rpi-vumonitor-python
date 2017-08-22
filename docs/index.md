@@ -385,3 +385,40 @@ And the schematic view:
 
 ![Schematic 3: MCP4922 Schematic Circuit](https://github.com/mrwunderbar666/Python-RPi-MCP4922/raw/master/documentation/mcp4922sketch_schem.png)
 
+#### Code
+
+We need a library for the MCP4922 to run, luckily I wrote one and [you can get it here](https://github.com/mrwunderbar666/Python-RPi-MCP4922).
+
+We follow the same testing logic:
+
+```python
+import RPi.GPIO as GPIO
+import MCP4922 # Custom MCP4922 Library
+import time
+
+GPIO.setmode(GPIO.BCM) # Setting up the GPIO Mode
+
+# DAC Setup
+dac = MCP4922()
+
+try:
+    dac.setVoltage(0, 0) # Setting a starting voltage of 0 at channel A
+    dac.setVoltage(1, 0) # Setting a starting voltage of 0 at channel B
+    dac.setVoltage(0, 500) # Setting a Voltage value of 500, equals 402 mV, at channel A
+    dac.setVoltage(1, 500) # Setting a Voltage value of 500, equals 402 mV, at channel B
+    time.sleep(2) # Wait 2 seconds
+    dac.setVoltage(0, 0) # Go back to 0, at channel A
+    dac.setVoltage(1, 0) # Go back to 0, at channel B
+    quit()
+except KeyboardInterrupt:
+    # Press CTRL + C to exit
+    # Cleanup
+    dac.setVoltage(0, 0)
+    dac.setVoltage(1, 0)
+    dac.shutdown(0)
+    dac.shutdown(1)
+    GPIO.cleanup()
+    sys.exit(0)
+    pass
+
+```
