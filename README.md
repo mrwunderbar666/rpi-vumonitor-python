@@ -1,95 +1,91 @@
 # Description
 _Using Audio VU Meters to visualize CPU and Network usage of your Raspberry Pi._
 
-Webinterfaces to monitor your RPi are neat and useful, but what if you want to have an analog display that physically shows you what your RPi is doing? 
+A collection of python scripts that enable different methods of driving analog VU Meters from your Raspberry Pi GPIOs
 
-There are many explanations out there that show how to use a small LCD Display to monitor your Raspberry Pi, but I haven't found any about using a VU meter.
+# Requirements
 
-This project is especially useful for people who salvage old HiFi equipment to create a casing for a Raspberry Pi. Use the old fashioned VU meters to give your raspberry pi a more hipster look :)
+- RPI.GPIO
+- psutil
+- Wiring Pi
+- MCP4922 Driver
+- MCP4725 Driver
 
-# Components & Tools
-- Raspberry Pi 3 Model B+
-- 2 VU Meter
+# 4 Different Methods
 
-    Any analog VU Meter will do. _Technically you can also use a voltmeter that is rated for 0 - 5V_
-- Trimpots
 
-    You should be able to adjust resistance between 0 and 20k Ohms. Maybe use more trimpots to get a finer adjustment range
-- Multimeter
-- Bench Power Supply
 
-    ideally can support low voltages of less than 3 V. Best: can step up in 10mv increments
-- Wires. You always need wires
+## Pulse Width Modulation and standard RPi.GPIO Library
+_Software PWM_
 
-## Optional Components
+In this version we use software PWM to pulse the VU Meters.
+I noticed that this method creates a lot of jitter and is quite inaccurate.
+Also the resolution is quite low, as my VU Meters already are at maximum
+level with a PWM Duty Cycle of 10 @ 200 Hz.
 
-- MCP4299 DAC
+But this is also the most simple and straightforward method.
 
-    2 Channel, 12 bit, Digital to Analog Converter
-- MCP4725 DAC
+### Requires:
 
-    1 Channel, 12 bit, Digital to Analog Converter
-- Capacitors
+- RPi.GPIO
+- psutil (monitoring system)
 
-    10µF and 100nF Capacitors
+## Pulse Width Modulation and WiringPi GPIO Library
+_Hardware PWM_
 
-# Overview
-So you want to use some VU Meters to display your Raspberry Pi system statistics? 
+In this version we use hardware PWM to pulse the VU Meters.
+The wiringpi library supports hardware PWM, unlike the RPi.GPIO library.
 
-With this tutorial you can extract any system stat and have it physically represented by a VU Meter. 
+This method has only little jitter and is more accurate compared to the
+software PWM version.
+Resolution is also better compared to the software PWM. I can get around
+200 steps of duty cycle until the VU Meter is at its peak.
 
-This tutorial focuses on Network Bandwidth usage and CPU usage. But with a few altered lines of code you can also display: e.g. Disk write/read stats, CPU temperature, etc.
 
-This tutorial is in several parts:
+### Requires:
 
-1. Understanding the VU Meter and its electrical characteristics
-1. Hooking it up to the RPi
-1. Using PWM (Pulse Width Modulation) to make the VU Meter Move
-1. Using a DAC to make the VU Meter move
-1. Accessing system statistics in Python and feed it to the VU Meter
+- Wiring Pi
+- psutil (monitoring system)
 
-We get started by understanding and gauging the hardware...
+## Dual Channel Digital to Analog Converter with custom Library
+_Using MCP4922 DAC_
 
-# Steps
-## 1: Analyze your VU Meters
-Firstly, we need to find out the range, sensitivity and specifications of our VU Meters. Those can vary greatly, depending on the manufacturer, type and previously intended usage.
+In this version we use an MCP4922 DAC to apply a constant voltage to two
+VU Meters.
+The MCP4922 is a Digital to Analog Converter with 2 Channels and 12 bit
+resolution.
 
-A VU Meter is basically a low current ammeter. For this application we will focus on the voltage required to gain a specific current flow through the VU Meter. Remember that Ohm's Law states that the Current is depending on the voltage and the resistance of the circuit. You can read all details about [VU Meters on Wikipedia.](https://en.wikipedia.org/wiki/VU_meter)
+It supports SPI, which is a bit painful to use at the beginning.
 
-VU Meters operate in a quite low voltage of around 100 - 1000 mV. Therefore, the better your bench power supply, the easier it gets.
+This method is very clean, has no jitter and highly accurate.
+The resolution is effectively at around 600 steps, because the DAC can
+adjust the voltage in 1mV steps.
 
-### Let's get some basic measurements:
+I opted for this as my permanent solution
 
-1. Measure your VU Meter's internal resistance using a multimeter. My VU meter has an internal resistance of 655 Ω
-1. Connect your VU Meter to your bench power supply and have at least 3 trimpots in series, but do not switch on your power supply yet. My bench power supply lowest reliable voltage is 1.24 V. If your's can go lower, it is even better.
-1. Set your trimpots to the highest resistance
-1. Attach your multimeter to the positive and negative terminals of your VU Meter
-1. Switch on your power supply
-1. Slowly decrease the resistance of your trimpots until your VU Meter shows maximum deflection (needle goes towards the maximum value). 
-1. Measure the voltage across the VU Meter. In my case: 0.443 V or 443 mV
-1. Measure the resistance across all your trimpots. In my case: 1190 Ω
+Requires:
 
-### VU Meter Gauging Circuit
-![Schematic 1: VU Meter Gauging Circuit](https://cdn.hackaday.io/images/4330441502869675844.png)
+- RPi.GPIO
+- MCP4922 Driver (https://github.com/mrwunderbar666/Python-RPi-MCP4922)
+- psutil (monitoring system)
 
-### Calculations for the Geeks (Optional)
+## Single Channel Digital to Analog Converter with Adafruit Library
+_Using MCP4725 DAC_
 
-Now that we have some basic specifications of the VU Meter, we can make some calculations.
+In this version we use an MCP4725 DAC to apply a constant voltage to one
+VU Meter.
+The MCP4725 is a Digital to Analog Converter with 1 Channel and 12 bit
+resolution. It supports I2C, which is nice and easy to use.
 
-The current required for the needle to move is calculated using Ohm's Law:
+Adafruit offers a breakout version and supplies some libraries for it.
 
-    I = V / R
+This method is very clean, has no jitter and highly accurate.
+The resolution is effectively at around 600 steps, because the DAC can
+adjust the voltage in 1mV steps.
 
-Where I is the current, V is the voltage, and R is the resistance:
+But has only one channel. So it is not a good solution if you want to drive
+several VU Meters at once.
+Requires:
 
-    V_
-
-This is useful to know if you have a different Voltage value from your power supply.
-
-Using a 5 V Power Supply
-
-Let's assume you have a 5 V power supply and want to get a ballpark estimation of the required resistance of your trimpots:
-
-Therefore we can estimate:
-
-That you need an resistance of about 7000 Ohms in order to drive your VU Meter properly with a 5V power supply.
+- MCP4725 Library (https://github.com/adafruit/Adafruit_Python_MCP4725)
+- psutil (monitoring system)
