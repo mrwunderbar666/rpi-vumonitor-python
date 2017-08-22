@@ -69,7 +69,7 @@ VU Meters operate in a quite low voltage of around 100 - 1000 mV. Therefore, the
 1. Measure the voltage across the VU Meter. In my case: 0.443 V or 443 mV
 1. Measure the resistance across all your trimpots. In my case: 1190 Ω
 
-### VU Meter Gauging Circuit
+#### VU Meter Gauging Circuit
 ![Schematic 1: VU Meter Gauging Circuit](https://cdn.hackaday.io/images/4330441502869675844.png)
 
 ### Calculations for the Geeks (Optional)
@@ -82,14 +82,69 @@ The current required for the needle to move is calculated using Ohm's Law:
 
 Where I is the current, V is the voltage, and R is the resistance:
 
-    V_
+    \frac{V_(PowerSupply)}{R_(Meter)+R_{Trimpot)} = \frac{1.24 V}{659 \Omega} + 1190 \Omega} = 670 \mu A
 
 This is useful to know if you have a different Voltage value from your power supply.
 
-Using a 5 V Power Supply
+#### Using a 5 V Power Supply
 
 Let's assume you have a 5 V power supply and want to get a ballpark estimation of the required resistance of your trimpots:
 
+    R_(Trimpot) + R_(Meter) = \frac{V}{I}
+    
+    R_(Trimpot) = \frac{V}{I} - R_(Meter)
+
 Therefore we can estimate:
 
-That you need an resistance of about 7000 Ohms in order to drive your VU Meter properly with a 5V power supply.
+    \frac{5 V}{670 \mu A} - 659 \Omega = 7455 \Omega - 569 \Omega = 6796 \Omega
+
+That you need an resistance of about **7000 Ohms** in order to drive your VU Meter properly with a 5V power supply.
+
+### Driving the VU Meter by the Raspberry Pi
+
+Now that we understand the VU Meters, let's have a look at how to connect and drive them from the Raspberry Pi.
+
+By default the RPi has a 3.3 V or 5 V supply rail. That would be total overkill for the sensitive VU Meters. A regular GPIO Pin delivers 3.3 V if it is set to "HIGH", so that would be also too much and not variable.
+
+So let's have a look at how we can get that 3.3 V to a much lower value and also change the output value:
+
+#### PWM (Pulse Width Modulation)
+
+The simplest way to control the voltage (and effective current) applied to the VU Meter is by using PWM (Pulse Width Modulation).
+
+There are two ways of creating a PWM Signal from the RPI:
+
+1. Software PWM (fast & simple, can use almost any GPIO)
+2. Hardware PWM (special python module, can use limited GPIOs)
+
+In the steps below, I will go into detail for both ways.
+
+#### DAC (Digital to Analog Converter)
+
+The RPi doesn't have any DAC integrated, so we need to hook one up. There are plenty of choices but also some considerations to make: 
+
+we need to have low voltages between 0 - 500 mV, and the supply source provides 3.3 V. That means we need a decent resolution.
+
+The resolution (or steps) of the DAC depends of its bit value.
+
+The cheaper DACs provide an 8-bit resolution, which means 256 steps:
+
+    \frac{3300mV}{256} = 12.8 mV
+
+So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste.
+
+At 10-bit we get 1024 steps:
+
+    \frac{3300mV}{1024} = 3.32 mV
+
+
+So with that we can control the voltage in 3.3 mV steps. Much better, but let's take this further.
+
+At 12-bit we have 4096 steps of resolution:
+
+    \frac{3300mV}{4096} = 0.8 mV
+
+
+12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate of the needle at the end.
+
+I will go into different DACs at a later point. E.g. how many VU Meters we want to control is another consideration for choosing a DAC.
