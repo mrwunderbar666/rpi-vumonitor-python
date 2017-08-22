@@ -367,12 +367,15 @@ This is my go to solution, because of the reasons mentioned above. Please note t
     CS         ->   GPIO08 Physical Pin 24 (SPI0 CE0) => Can be changed
     SDI        ->   GPIO10 Physical Pin 19 (SPI0 MOSI) => cannot be changed in hardware SPI MODE
     SCK        ->   GPIO11 Physical Pin 23 (SPI0 SCLK) => cannot be changed in hardware SPI MODE
+    LDAC       ->   GND
+    SHDN       ->   3.3 V
+    V Ref A    ->   3.3 V
+    V Ref B    ->   3.3 V
+    VSS        ->   GND
     
     MCP4922    =>   VU Meters
     V Out A    ->   VU Meter 1
-    V Ref A    ->   3.3 V
     V Out B    ->   VU Meter 2
-    V Ref B    ->   3.3 V
     
 For this ciruit it is also a good idea to add two bypass capacitors. The circuit get's slightly more complex:
 
