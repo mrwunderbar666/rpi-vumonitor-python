@@ -124,31 +124,7 @@ In the steps below, I will go into detail for both ways.
 
 ### DAC (Digital to Analog Converter)
 
-The RPi doesn't have any DAC integrated, so we need to hook one up. There are plenty of choices but also some considerations to make: 
-
-we need to have low voltages between 0 - 500 mV, and the supply source provides 3.3 V. That means we need a decent resolution.
-
-The resolution (or steps) of the DAC depends of its bit value.
-
-The cheaper DACs provide an 8-bit resolution, which means 256 steps:
-
-    \frac{3300mV}{256} = 12.8 mV
-
-So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste.
-
-At 10-bit we get 1024 steps:
-
-    \frac{3300mV}{1024} = 3.32 mV
-
-
-So with that we can control the voltage in 3.3 mV steps. Much better, but let's take this further.
-
-At 12-bit we have 4096 steps of resolution:
-
-    \frac{3300mV}{4096} = 0.8 mV
-
-
-12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate of the needle at the end.
+The RPi doesn't have any DAC integrated, so we need to hook one up. 
 
 I will go into different DACs at a later point. E.g. how many VU Meters we want to control is another consideration for choosing a DAC.
 
@@ -278,3 +254,49 @@ except KeyboardInterrupt:
 It should move the VU Meter needle close to its maximum deflection and then return to 0. You can also use the [wiringpi calibration tool in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/wiringpi_setpwm.py).
 
 # Insert Gif of VU Meter with Wiring Pi
+
+Notice how there is almost no jitter using the hardware PWM.
+
+## 4: Digital to Analog Converter (DAC)
+
+With PWM we face some strong limitations: if we use software PWM we can use any GPIO pin, but get a lot of jitter. If we use hardware PWM we are limited to very few pins and two channels, but get almost no jitter.
+
+This is were the DAC comes in. It let's us control more VU Meters at a high level of accuracy.
+
+### Chosing a DAC
+
+There are plenty of choices but also some considerations to make: 
+
+We need to have low voltages between 0 - 500 mV, and the supply source provides 3.3 V. That means we need a decent resolution.
+
+The resolution (or steps) of the DAC depends of its bit value.
+
+The cheaper DACs provide an 8-bit resolution, which means 256 steps:
+
+    \frac{3300mV}{256} = 12.8 mV
+
+So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste.
+
+At 10-bit we get 1024 steps:
+
+    \frac{3300mV}{1024} = 3.32 mV
+
+
+So with that we can control the voltage in 3.3 mV steps. Much better, but let's take this further.
+
+At 12-bit we have 4096 steps of resolution:
+
+    \frac{3300mV}{4096} = 0.8 mV
+
+
+12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate of the needle at the end.
+
+DACs also have a varying amount of channels. So the amount of channels depend on the amount of VU Meters you want to drive. And 12-bit DACs get significantly more expensive by increasing amount of channels.
+
+You also want to make sure that the DAC uses either SPI or I2C to communicate with the RPi via GPIOs. 
+
+Another consideration is the packaging: there are amazing microchips out there that can do cool stuff, but some of them are only available in a Surface Mount packaging which requires a particular set of tools and skills to handle. Therefore, I prefer to get nice big DIP or through hole components that are easy to wire up.
+
+The [MCP4725](http://ww1.microchip.com/downloads/en/DeviceDoc/22039d.pdf) is a well supported DAC with [I2C](https://en.wikipedia.org/wiki/I%C2%B2C) that is often sold with a [breakout board](http://lmgtfy.com/?q=mcp4725+breakout+board) and is therefore convenient to use. But it has only 1 channel, so you will be limited to drive only a single VU Meter from it.
+
+After some researching I decided to go for the [MCP4922](http://ww1.microchip.com/downloads/en/DeviceDoc/22250A.pdf) which has 12-bit and two channels, and comes in a nice big DIP package. The Raspberry Pi can communicate with the chip via SPI and you can find my [python library for it here](https://github.com/mrwunderbar666/python-rpi-mcp4922). 
