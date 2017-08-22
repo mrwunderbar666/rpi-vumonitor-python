@@ -586,8 +586,21 @@ except (KeyboardInterrupt, SystemExit):
     sys.exit(0)
 ```
 
+Now the VU-Meter will move according to the total network usage.
+
+### Complete Code
+
+The complete code for all different methods are in my [github repository](https://github.com/mrwunderbar666/rpi-vumonitor-python) and includes scripts for displaying CPU and Network statistics using different methods:
+- software PWM
+- hardware PWM
+- MCP4725 DAC
+- MCP4922 DAC
 
 ## 8: Linear vs Logarithmic Scaling
 
 
 ## 9: Wrapping up
+
+### Start at boot
+
+
