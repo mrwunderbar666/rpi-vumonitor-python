@@ -73,7 +73,7 @@ VU Meters operate in a quite low voltage of around 100 - 1000 mV. Therefore, the
 1. Measure the resistance across all your trimpots. In my case: 1190 Ω
 
 #### VU Meter Gauging Circuit
-![Schematic 1: VU Meter Gauging Circuit](https://cdn.hackaday.io/images/4330441502869675844.png)
+![Schematic 1: VU Meter Gauging Circuit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/measure-VU-Meter_schem.png)
 
 ### Calculations for the Geeks (Optional)
 
@@ -265,7 +265,7 @@ With PWM we face some strong limitations: if we use software PWM we can use any 
 
 This is were the DAC comes in. It let's us control more VU Meters at a higher level of accuracy.
 
-### Chosing a DAC
+### Choosing a DAC
 
 There are plenty of choices but also some considerations to make: 
 
@@ -302,3 +302,29 @@ Another consideration is the packaging: there are amazing microchips out there t
 The [MCP4725](http://ww1.microchip.com/downloads/en/DeviceDoc/22039d.pdf) is a well supported DAC with [I2C](https://en.wikipedia.org/wiki/I%C2%B2C) that is often sold with a [breakout board](http://lmgtfy.com/?q=mcp4725+breakout+board) and is therefore convenient to use. But it has only 1 channel, so you will be limited to drive only a single VU Meter from it.
 
 After some researching I decided to go for the [MCP4922](http://ww1.microchip.com/downloads/en/DeviceDoc/22250A.pdf) which has 12-bit and two channels, and comes in a nice big DIP package. The Raspberry Pi can communicate with the chip via SPI and you can find my [python library for it here](https://github.com/mrwunderbar666/python-rpi-mcp4922). 
+
+### Using MCP4725
+If you need only one channel you can go for the MCP4725 and drive the VU Meter at good and reliable accuracy.
+
+It supports I2C, so you need only 2 GPIO pins for communication with the device.
+
+#### Wiring
+
+Here is a simple wiring scheme:
+
+    MCP4725     RPi
+    SCL         GPIO3 (Physical 5)
+    SDA         GPIO2 (Physical 3)
+    VDD         3.3 V (Physical 1)
+    VSS         GND (Physical 6)
+    VOUT        VU Meter Positive
+    
+It is a good idea to add resistors to the SCL and SDA connections and also to add a bypass capacitor from the 3.3 V rail to the MCP4725. In breadboard it would look like this:
+
+![Breadboard 2: MCP4725 Circuit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/mcp4725_sketch_bb.png)
+
+And here is a schematic view of the circuit:
+
+![Schematic 2: MCP4725 Circuit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/mcp4725_sketch_schem.png)
+
+
