@@ -312,12 +312,12 @@ It supports I2C, so you need only 2 GPIO pins for communication with the device.
 
 Here is a simple wiring scheme:
 
-    MCP4725     RPi
-    SCL         GPIO3 (Physical 5)
-    SDA         GPIO2 (Physical 3)
-    VDD         3.3 V (Physical 1)
-    VSS         GND (Physical 6)
-    VOUT        VU Meter Positive
+    MCP4725     =>  RPi
+    SCL         ->  GPIO3 (Physical 5)
+    SDA         ->  GPIO2 (Physical 3)
+    VDD         ->  3.3 V (Physical 1)
+    VSS         ->  GND (Physical 6)
+    VOUT        ->  VU Meter Positive
     
 It is a good idea to add resistors to the SCL and SDA connections and also to add a bypass capacitor from the 3.3 V rail to the MCP4725. In breadboard it would look like this:
 
@@ -327,4 +327,58 @@ And here is a schematic view of the circuit:
 
 ![Schematic 2: MCP4725 Circuit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/mcp4725_sketch_schem.png)
 
+#### Code
+
+You will have to get the correct library to drive the chip, I recommend to use the [Adafruit library here](https://github.com/adafruit/Adafruit_Python_MCP4725). You can also have a look at their [tutorial for the chip](https://learn.adafruit.com/mcp4725-12-bit-dac-with-raspberry-pi/overview), if you need more information.
+
+Following the logic of the previous code examples, we can test the DAC and the VU Meter like this:
+
+```python
+import Adafruit_MCP4725 # Adafruit DAC Library
+import time
+
+# DAC Setup
+dac = Adafruit_MCP4725.MCP4725()
+
+try:
+    dac.set_voltage(0) # Setting a starting voltage of 0
+    dac.set_voltage(500) # Setting a Voltage value of 500, equals 402 mV
+    time.sleep(2) # Wait 2 seconds
+    dac.set_voltage(0) # Go back to 0
+    quit()
+except KeyboardInterrupt:
+    # Press CTRL + C to exit
+    # Cleanup
+    dac.set_voltage(0)
+    sys.exit(0)
+    pass
+
+```
+
+And as before, this should move the needle close to the maximum deflection and back. 
+
+### Using MCP4922
+
+This is my go to solution, because of the reasons mentioned above. Please note that the MCP4922 supports SPI interface only, so we'll need three wires to control the chip. 
+
+#### Wiring
+
+    MCP4922    =>   Raspberry Pi
+    CS         ->   GPIO08 Physical Pin 24 (SPI0 CE0) => Can be changed
+    SDI        ->   GPIO10 Physical Pin 19 (SPI0 MOSI) => cannot be changed in hardware SPI MODE
+    SCK        ->   GPIO11 Physical Pin 23 (SPI0 SCLK) => cannot be changed in hardware SPI MODE
+    
+    MCP4922    =>   VU Meters
+    V Out A    ->   VU Meter 1
+    V Ref A    ->   3.3 V
+    V Out B    ->   VU Meter 2
+    V Ref B    ->   3.3 V
+    
+For this ciruit it is also a good idea to add two bypass capacitors. The circuit get's slightly more complex:
+
+![Breadboard 3: MCP4922 Breadboard Circuit](https://github.com/mrwunderbar666/Python-RPi-MCP4922/raw/master/documentation/mcp4922sketch_bb.png)
+
+And the schematic view:
+
+![Schematic 3: MCP4922 Schematic Circuit](https://github.com/mrwunderbar666/Python-RPi-MCP4922/raw/master/documentation/mcp4922sketch_schem.png)
 
