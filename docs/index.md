@@ -179,19 +179,19 @@ We know that we want to get a maximum voltage of 0.443 V from a 3.3 V source. Th
 #### Wiring
 Very simple and easy to hook up the VU Meter to the RPi:
 
-1. Connect the positive end of the VU Meter to GPIO Pin 23 (Physical Pin 12)
+1. Connect the positive end of the VU Meter to GPIO Pin 23 (Physical Pin 16)
 1. Connect the negative end to a GND Pin
 
 #### Code
 You can check out the [calibration tool in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/pwm_set.py) that let's you enter a duty cycle value and it will pulse the VU Meter at 200 Hz.
 
-In Python:
+A small example in Python:
 
 ```python
 import RPi.GPIO as GPIO # Standard GPIO module
 import time
 
-vu_pin = 23 # BCM23, Physical 12
+vu_pin = 23 # BCM23, Physical 16
 frequency = 200 # 200 Hz
 
 GPIO.setmode(GPIO.BCM) # Using Broadcom pin numbering scheme
@@ -216,6 +216,65 @@ except KeyboardInterrupt:
     pass
 ```
 
+If you execute this code, you should observer the needle of the VU-Meter to move almost to its maximum deflection (we calculated 13.4 % above for the total maximum)
 
+We can also incrementally increase the Duty Cycle with the help of [this little script in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/pwm_test.py).
 
+The result looks like this:
 
+# Insert GIF with jittery VU Meter
+
+Notice how the needles jitters and jumps occasionally. I guess this is caused by the software that doesn't produce a perfectly clean frequency of 200 Hz.
+
+#### Reducing Jitter
+
+I tried to reduce the jitter caused by the software PWM by adding a [Low Pass Filter](http://www.learningaboutelectronics.com/Articles/Low-pass-filter-calculator.php), but the results were not very satisfying. It definitely requires more tweaking to get it to work properly.
+
+### Hardware PWM
+
+The GPIOs of the Raspberry Pi also support hardware controlled PWM. That outputs a consistent frequency and greatly reduces the jitter at the VU Meter. However, there are only a limited amount of Pins that support hardware PWM and the GPIOs have only two hardware PWM Channels. This means we can only connect up to two VU Meters via hardware PWM.
+
+You can find [more details here](https://pinout.xyz/pinout/pin12_gpio18).
+
+#### Wiring
+
+1. Connect the positive end of the VU Meter to GPIO Pin 18 (Physical Pin 12)
+1. Connect the negative end to a GND Pin
+
+#### Code
+For hardware PWM we have to use the [WiringPi Library](https://github.com/WiringPi/WiringPi-Python) and make some modifications to the code example above, as the WiringPi Library uses different commands.
+
+The duty cycle range of this library is not from 0 to 100, but from **0 - 1024**. Therefore, we need to adjust the maximum PWM Value:
+
+    13.4 % * 1024 = 137
+    
+Small example in Python:
+
+```python
+import wiringpi # WiringPi Library
+import time
+
+vu_pin = 18 # BCM18, Physical 12
+OUTPUT = 2 # Output mode of the Pin, 2 means PWM
+
+wiringpi.wiringPiSetupGpio() # GPIO Setup
+
+wiringpi.pinMode(vu_pin,OUTPUT) # Assigning the VU Meter Pin
+
+try:
+    wiringpi.pwmWrite(vu_pin, 0) # Setup PWM using Pin, Initial Value of 0
+    wiringpi.pwmWrite(vu_pin, 100) # Setting a duty cycle of 100 (out of 1024)
+    time.sleep(2) # Wait 2 seconds
+    wiringpi.pwmWrite(vu_pin, 0) # Go back to 0
+    quit()
+except KeyboardInterrupt:
+    # Press CTRL + C to exit
+    # Manual Cleanup
+    wiringpi.pwmWrite(vu_pin, 0)
+    wiringpi.pinMode(vu_pin, 0)
+    pass
+```
+
+It should move the VU Meter needle close to its maximum deflection and then return to 0. You can also use the [wiringpi calibration tool in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/wiringpi_setpwm.py).
+
+# Insert Gif of VU Meter with Wiring Pi
