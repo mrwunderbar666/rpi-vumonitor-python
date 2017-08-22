@@ -422,3 +422,13 @@ except KeyboardInterrupt:
     pass
 
 ```
+
+And we can observer the beauty:
+
+# Insert Gif of DAC VU Meters moving
+
+## 5: Linear vs Logarithmic Scaling
+
+## 6: Getting System Stats using psutil
+
+## 7: Wrapping up
