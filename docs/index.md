@@ -483,8 +483,8 @@ try:
     while True:
         cpu_usage = psutil.cpu_percent(interval) # gauge the CPU usage and store it in a variable
         print(cpu_usage) # Print the current CPU Usage in Percent
-        dac_value = cpu_usage / dac_max # calculate the dac value based on the CPU Usage in percent
-        dac.SetVoltage(0, dac_value) # output to the VU Meter
+        dac_value = (cpu_usage / 100) * dac_max # calculate the dac value based on the CPU Usage in percent
+        dac.SetVoltage(0, int(dac_value)) # output to the VU Meter
         interval = 1 # poll every second
 except (KeyboardInterrupt, SystemExit):
     # Cleanup
@@ -550,7 +550,7 @@ net_max = 15000000
 
 def net_coeffiecient(bytes_received_after, bytes_received_before, bytes_send_after, bytes_send_before):
     net_current = ((bytes_received_after - bytes_received_before) + ( bytes_send_after - bytes_send_before))
-    x = (net_current / net_max) * 100
+    x = (net_current / net_max)
     print("Current Network usage in percent is: {}" .format(x))
     # Clamping the maximum percentage to 100
     if x > 100:
@@ -575,8 +575,8 @@ try:
     interval = 0 # First time, poll immediately
     while True:
         network_usage = network_poll(interval) # measure the network activitiy
-        dac_value = network_usage / dac_max # calculate the dac value based on the Netowrk Usage in percent
-        dac.SetVoltage(0, dac_value) # output to the VU Meter
+        dac_value = network_usage * dac_max # calculate the dac value based on the Netowrk Usage in percent
+        dac.SetVoltage(0, int(dac_value)) # output to the VU Meter
         interval = 1 # poll every second
 except (KeyboardInterrupt, SystemExit):
     # Cleanup
