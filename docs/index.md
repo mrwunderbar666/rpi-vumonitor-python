@@ -616,8 +616,7 @@ I am using a limited logistic growth function, that can be expressed as:
 
     B(x) = S - (S - B_0) \cdot e^{-k x}
     
-S = limit
-k = slope
+_S_ = limit, _k_ = slope
 
 This function will never reach its limit of _S_, which comes in handy given that we don't want the VU-Meter to go beyond its maximum deflection.
 
@@ -629,10 +628,51 @@ Adjusting _k_ helps to flatten the slope a bit, so the effect is more subtle:
 
 ![Figure 2: Adjusted k](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/Figure_2.png)
 
-
-
 ## 9: Wrapping up
 
+So to implement everything with your Raspberry Pi, you can clone my repository:
+
+```bash
+cd ~
+git clone https://github.com/mrwunderbar666/rpi-vumonitor-python.git
+```
+
+Make sure you have all the dependencies installed:
+
+```bash
+sudo apt-get install python-rpi.gpio
+sudo pip install psutil
+sudo pip install wiringpi
+```
+
+And if you want to use a DAC, check the respective repositories.
+
+After the dependencies are running you can run one script with your preferred method:
+
+```bash
+cd rpi-vumonitor-python
+sudo python pwm_vumonitor.py &
+```
+
 ### Start at boot
+
+If you want to launch the script automatically, you can do that with a shell script and add it to your crontab:
+
+```bash
+cd ~
+nano startup.sh
+```
+
+Add the following code to the startup.sh file:
+
+```bash
+sudo python \home\USER\rpi-vumonitor-python\pwm_vumonitor.py &
+```
+
+and then add to your crontab via `sudo crontab -e`:
+
+```bash
+@reboot bash \home\USER\startup.sh
+```
 
 
