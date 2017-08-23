@@ -7,6 +7,8 @@ There are many explanations out there that show how to use a small LCD Display t
 
 This project is especially useful for people who salvage old HiFi equipment to create a casing for a Raspberry Pi. Use the old fashioned VU meters to give your raspberry pi a more hipster look :)
 
+This is a beginner friendly tutorial and it touches on very different topics.
+
 # Components & Tools
 - Raspberry Pi 3 Model B+
 - 2 VU Meter
@@ -597,6 +599,19 @@ The complete code for all different methods are in my [github repository](https:
 - MCP4922 DAC
 
 ## 8: Linear vs Logarithmic Scaling
+
+Now we are practically done, but if you have inspected my code carefully, you could see that I am not using a linear scale to output the VU Meter value.
+
+I was using a linear scale at the beginning, but noticed that it was very hard to read low system activity on the VU-Meter. If my system was using the CPU of less than 10 %, I couldn't really tell if the needle was at 0 or not.
+
+So I thought it might be better to have a [logarithmic growth function](http://www.math.umd.edu/~tjp/131%2011.1-2%20supplement%20logistic%20growth.pdf) as a base for the VU Meter Needle to move.
+
+You can compare the results here:
+
+# Insert GIF VU-Meters Linear vs Logarithmic Scaling
+
+### Some mathematical explanations
+
 
 
 ## 9: Wrapping up
