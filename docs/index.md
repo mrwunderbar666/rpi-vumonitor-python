@@ -83,11 +83,11 @@ Now that we have some basic specifications of the VU Meter, we can make some cal
 
 The current required for the needle to move is calculated using Ohm's Law:
 
-    I = V / R
+    I = \frac{V}{R}
 
 Where I is the current, V is the voltage, and R is the resistance:
 
-    \frac{V_(PowerSupply)}{R_(Meter)+R_{Trimpot)} = \frac{1.24 V}{659 \Omega} + 1190 \Omega} = 670 \mu A
+    \frac{V_{PowerSupply}}{R_{Meter}+R_{Trimpot}} = \frac{1.24 V}{659 \Omega + 1190 \Omega} = 670 \mu A
 
 This is useful to know if you have a different Voltage value from your power supply.
 
@@ -95,9 +95,9 @@ This is useful to know if you have a different Voltage value from your power sup
 
 Let's assume you have a 5 V power supply and want to get a ballpark estimation of the required resistance of your trimpots:
 
-    R_(Trimpot) + R_(Meter) = \frac{V}{I}
+    R_{Trimpot} + R_{Meter} = \frac{V}{I}
     
-    R_(Trimpot) = \frac{V}{I} - R_(Meter)
+    R_{Trimpot} = \frac{V}{I} - R_{Meter}
 
 Therefore we can estimate:
 
@@ -142,11 +142,11 @@ The duty cycle (_D_) dermines the effective voltage and current applied to the V
 
 Using a small formula:
 
-    V_(Effective) = V_(Total) * D
+    V_{Effective} = V_{Total} \cdot D
     
 or:
 
-    D = \frac{V_(Effective)}{V_(Total)}
+    D = \frac{V_{Effective}}{V_{Total}}
     
 We know that we want to get a maximum voltage of 0.443 V from a 3.3 V source. Therefore, we can calculate:
 
@@ -611,6 +611,23 @@ You can compare the results here:
 # Insert GIF VU-Meters Linear vs Logarithmic Scaling
 
 ### Some mathematical explanations
+
+I am using a limited logistic growth function, that can be expressed as:
+
+    B(x) = S - (S - B_0) \cdot e^{-k x}
+    
+S = limit
+k = slope
+
+This function will never reach its limit of _S_, which comes in handy given that we don't want the VU-Meter to go beyond its maximum deflection.
+
+If we compare _B(t)_ function with a regular linear function, it looks like this:
+
+![Figure 1: Linear vs logarithmic growth](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/Figure_1.png)
+
+Adjusting _k_ helps to flatten the slope a bit, so the effect is more subtle:
+
+![Figure 2: Adjusted k](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/Figure_2.png)
 
 
 
