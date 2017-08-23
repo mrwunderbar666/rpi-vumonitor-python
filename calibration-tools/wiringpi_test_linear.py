@@ -34,7 +34,8 @@ S = 200
 B0 = 0
 
 """ Configure your pin here """
-PIN_TO_PWM = 18  # Physical Pin 12
+vu_pin1 = 18  # Physical Pin 12
+vu_pin2 = 13  # Physical Pin 33
 OUTPUT = 2
 
 wiringpi.wiringPiSetupGpio()
@@ -45,22 +46,29 @@ def B(t):
 
 
 try:
-    wiringpi.pinMode(PIN_TO_PWM, OUTPUT)
-    wiringpi.pwmWrite(PIN_TO_PWM, 0)  # Setup PWM using Pin, Initial Value
-        while True:
-            for i in range(100):
-                pwm_float = B(i)
-                wiringpi.pwmWrite(PIN_TO_PWM, int(pwm_float))
-                print("i = {}, pwm_float = {}" .format(i, pwm_float))
-                time.sleep(0.1)
-            for i in range(100):
-                pwm_float = B(i)
-                wiringpi.pwmWrite(PIN_TO_PWM, int(pwm_float))
-                print("i = {}, pwm_float = {}" .format(i, pwm_float))
-                time.sleep(0.1)
+    wiringpi.pinMode(vu_pin1, OUTPUT)
+    wiringpi.pinMode(vu_pin2, OUTPUT)
+    wiringpi.pwmWrite(vu_pin1, 0)  # Setup PWM using Pin, Initial Value
+    wiringpi.pwmWrite(vu_pin2, 0)
+    while True:
+        for i in range(100):
+            pwm_float = B(i)
+            wiringpi.pwmWrite(vu_pin1, int(pwm_float))
+            wiringpi.pwmWrite(vu_pin2, int(pwm_float))
+            print("i = {}, pwm_float = {}" .format(i, pwm_float))
+            time.sleep(0.1)
+        for i in range(100, 0, -1):
+            pwm_float = B(i)
+            wiringpi.pwmWrite(vu_pin1, int(pwm_float))
+            wiringpi.pwmWrite(vu_pin2, int(pwm_float))
+            print("i = {}, pwm_float = {}" .format(i, pwm_float))
+            time.sleep(0.1)
 
 except KeyboardInterrupt:
     # manual cleanup
-    wiringpi.pwmWrite(PIN_TO_PWM, 0)
-    wiringpi.pinMode(PIN_TO_PWM, 0)
+    wiringpi.pwmWrite(vu_pin1, 0)
+    wiringpi.pwmWrite(vu_pin2, 0)
+    wiringpi.pinMode(vu_pin1, 0)
+    wiringpi.pinMode(vu_pin2, 0)
+
     pass

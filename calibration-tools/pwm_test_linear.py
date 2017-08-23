@@ -57,22 +57,22 @@ try:
     # start PWM
     p1.start(0)
     p2.start(0)
-        while True:
-            for i in range(100):
-                pwm_float = B(i)
-                p1.ChangeDutyCycle(pwm_float)
-                p2.ChangeDutyCycle(pwm_float)
-                print("i = {}, pwm_float = {}" .format(i, pwm_float))
-                time.sleep(0.1)
-            for i in range(100):
-                pwm_float = B(i)
-                p1.ChangeDutyCycle(S - pwm_float)
-                p2.ChangeDutyCycle(S - pwm_float)
-                print("i = {}, pwm_float = {}" .format(i, pwm_float))
-                time.sleep(0.1)
+    while True:
+        for i in range(100):
+            pwm_float = B(i)
+            p1.ChangeDutyCycle(pwm_float)
+            p2.ChangeDutyCycle(pwm_float)
+            print("i = {}, pwm_float = {}" .format(i, pwm_float))
+            time.sleep(0.1)
+        for i in range(100):
+            pwm_float = B(i)
+            p1.ChangeDutyCycle(S - pwm_float)
+            p2.ChangeDutyCycle(S - pwm_float)
+            print("i = {}, pwm_float = {}" .format(i, pwm_float))
+            time.sleep(0.1)
 
 except KeyboardInterrupt:
-        # Cleanup
+    # Cleanup
     p1.stop()
     p2.stop()
     GPIO.cleanup()

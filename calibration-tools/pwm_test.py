@@ -68,10 +68,10 @@ try:
             p2.ChangeDutyCycle(pwm_float)
             print("i = {}, pwm_float = {}" .format(i, pwm_float))
             time.sleep(0.1)
-        for i in range(100):
+        for i in range(100, 0, -1):
             pwm_float = B(i)
-            p1.ChangeDutyCycle(S - pwm_float)
-            p2.ChangeDutyCycle(S - pwm_float)
+            p1.ChangeDutyCycle(pwm_float)
+            p2.ChangeDutyCycle(pwm_float)
             print("i = {}, pwm_float = {}" .format(i, pwm_float))
             time.sleep(0.1)
 
