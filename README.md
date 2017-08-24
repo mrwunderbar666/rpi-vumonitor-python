@@ -3,6 +3,10 @@ _Using Audio VU Meters to visualize CPU and Network usage of your Raspberry Pi._
 
 A collection of python scripts that enable different methods of driving analog VU Meters from your Raspberry Pi GPIOs
 
+## [Project on Hackaday.io](https://hackaday.io/project/26951-audio-vu-meters-raspberry-pi)
+
+## [Documentation on GitHub](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/docs/index.md)
+
 # Requirements
 
 - RPI.GPIO
