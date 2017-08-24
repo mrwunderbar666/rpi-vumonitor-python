@@ -97,7 +97,14 @@ The current required for the needle to move is calculated using Ohm's Law:
 
 Where I is the current, V is the voltage, and R is the resistance:
 
-    \frac{V_{PowerSupply}}{R_{Meter}+R_{Trimpot}} = \frac{1.24 V}{659 \Omega + 1190 \Omega} = 670 \mu A
+      V                                                        
+       PowerSupply                 1.24 V                      
+    -----------------  =  ------------------------  =  670 mu A
+    R      + R            659 Ohms  +  1190 Ohms             
+     Meter    Trimpot                                          
+
+![670uA](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/670uA.png)
+
 
 This is useful to know if you have a different Voltage value from your power supply.
 
@@ -105,13 +112,24 @@ This is useful to know if you have a different Voltage value from your power sup
 
 Let's assume you have a 5 V power supply and want to get a ballpark estimation of the required resistance of your trimpots:
 
-    R_{Trimpot} + R_{Meter} = \frac{V}{I}
-    
-    R_{Trimpot} = \frac{V}{I} - R_{Meter}
+                            V
+    R         +  R       =  -
+     Trimpot      Meter     I
+                         
+                 V           
+    R         =  -  -  R     
+     Trimpot     I      Meter
+
+![r trimpot](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/r_trimpot.png)
 
 Therefore we can estimate:
 
-    \frac{5 V}{670 \mu A} - 659 \Omega = 7455 \Omega - 569 \Omega = 6796 \Omega
+       5 V                                                            
+    --------  -  659 Ohm  =  7455 Ohm  -  569 Ohm  =  6796 Ohm
+    670 mu A                                                          
+
+![6796ohms](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/6796ohms.png)
+
 
 That you need an resistance of about **7000 Ohms** in order to drive your VU Meter properly with a 5V power supply.
 
@@ -152,15 +170,30 @@ The duty cycle (_D_) dermines the effective voltage and current applied to the V
 
 Using a small formula:
 
-    V_{Effective} = V_{Total} \cdot D
-    
+    V           =  V      * D
+     Effective      Total       
+
+![V Effective](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/v_effective.png)
+
 or:
 
-    D = \frac{V_{Effective}}{V_{Total}}
-    
+          V         
+           Effective
+    D  =  ----------
+            V       
+             Total  
+
+![Duty Cycle](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/dutycycle.png)
+
+
 We know that we want to get a maximum voltage of 0.443 V from a 3.3 V source. Therefore, we can calculate:
 
-    \frac{0.443 V}{3.3 V} = 0.134 = 13.4 %
+    0.443 V                     
+    -------  =  0.134  =  13.4 %
+     3.3 V                      
+
+![13 Percent](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/13percent.png)
+
 
 ### Software PWM
 
@@ -239,7 +272,10 @@ For hardware PWM we have to use the [WiringPi Library](https://github.com/Wiring
 
 The duty cycle range of this library is not from 0 to 100, but from **0 - 1024**. Therefore, we need to adjust the maximum PWM Value:
 
-    13.4 % * 1024 = 137
+    13.4 % * 1024  =  137
+
+![Wiring Pi Duty Cycle](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/wiringpi_dutycycle.png)
+
     
 Small example in Python:
 
@@ -295,21 +331,31 @@ The resolution (or steps) of the DAC depends of its bit value.
 
 The cheaper DACs provide an 8-bit resolution, which means 256 steps:
 
-    \frac{3300mV}{256} = 12.8 mV
+    3300mV            
+    ------  =  12.8 mV
+      256             
+
+![8 Bit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/8bit.png)
 
 So with that we can control the voltage in 12.8 mV steps. A bit too low for my taste, because there is not much gained from it comparing with PWM.
 
 At 10-bit we get 1024 steps:
 
-    \frac{3300mV}{1024} = 3.32 mV
+    3300mV            
+    ------  =  3.32 mV
+     1024             
 
+![10 Bit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/10bit.png)
 
 So with that we can control the voltage in 3.3 mV steps. Much better, but let's take this further.
 
 At 12-bit we have 4096 steps of resolution:
 
-    \frac{3300mV}{4096} = 0.8 mV
+    3300mV           
+    ------  =  0.8 mV
+     4096            
 
+![12 Bit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/12bit.png)
 
 12-bit seems right, because it let's us control the VU Meter in around 1 mV steps. Which provides a quite accurate signal with about 500 steps for the needle at the end.
 
@@ -640,8 +686,13 @@ _Click to watch_
 
 I am using a limited logistic growth function, that can be expressed as:
 
-    B(x) = S - (S - B_0) \cdot e^{-k x}
-    
+                                   - k x
+    B(x)  =  S  -  (S  -  B  ) * e      
+                           0              
+
+![Logarithmic Growth](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/log_growth.png)
+
+
 _S_ = limit, _k_ = slope
 
 This function will never reach its limit of _S_, which comes in handy given that we don't want the VU-Meter to go beyond its maximum deflection.
