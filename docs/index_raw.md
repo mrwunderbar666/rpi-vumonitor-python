@@ -1,7 +1,7 @@
 # Description
 _Using Audio VU Meters to visualize CPU and Network usage of your Raspberry Pi._
 
-Webinterfaces to monitor your RPi are neat and useful, but what if you want to have an analog display that physically shows you what your RPi is doing? 
+Webinterfaces to monitor your RPi are neat and useful, but what if you want to have an analog display that physically shows you what your RPi is doing?
 
 There are many explanations out there that show how to use a small LCD Display to monitor your Raspberry Pi, but I haven't found any about using a VU meter.
 
@@ -36,9 +36,9 @@ This is a beginner friendly tutorial and it touches on very different topics.
     10µF and 100nF Capacitors
 
 # Overview
-So you want to use some VU Meters to display your Raspberry Pi system statistics? 
+So you want to use some VU Meters to display your Raspberry Pi system statistics?
 
-With this tutorial you can extract any system stat and have it physically represented by a VU Meter. 
+With this tutorial you can extract any system stat and have it physically represented by a VU Meter.
 
 This tutorial focuses on Network Bandwidth usage and CPU usage. But with a few altered lines of code you can also display: e.g. Disk write/read stats, CPU temperature, etc.
 
@@ -70,7 +70,7 @@ VU Meters operate in a quite low voltage of around 100 - 1000 mV. Therefore, the
 1. Set your trimpots to the highest resistance
 1. Attach your multimeter to the positive and negative terminals of your VU Meter
 1. Switch on your power supply
-1. Slowly decrease the resistance of your trimpots until your VU Meter shows maximum deflection (needle goes towards the maximum value). 
+1. Slowly decrease the resistance of your trimpots until your VU Meter shows maximum deflection (needle goes towards the maximum value).
 1. Measure the voltage across the VU Meter. In my case: 0.443 V or 443 mV
 1. Measure the resistance across all your trimpots. In my case: 1190 Ω
 
@@ -96,7 +96,7 @@ This is useful to know if you have a different Voltage value from your power sup
 Let's assume you have a 5 V power supply and want to get a ballpark estimation of the required resistance of your trimpots:
 
     R_{Trimpot} + R_{Meter} = \frac{V}{I}
-    
+
     R_{Trimpot} = \frac{V}{I} - R_{Meter}
 
 Therefore we can estimate:
@@ -126,7 +126,7 @@ In the steps below, I will go into detail for both ways.
 
 ### DAC (Digital to Analog Converter)
 
-The RPi doesn't have any DAC integrated, so we need to hook one up. 
+The RPi doesn't have any DAC integrated, so we need to hook one up.
 
 I will go into different DACs at a later point. E.g. how many VU Meters we want to control is another consideration for choosing a DAC.
 
@@ -143,14 +143,14 @@ The duty cycle (_D_) dermines the effective voltage and current applied to the V
 Using a small formula:
 
     V_{Effective} = V_{Total} \cdot D
-    
+
 or:
 
     D = \frac{V_{Effective}}{V_{Total}}
-    
+
 We know that we want to get a maximum voltage of 0.443 V from a 3.3 V source. Therefore, we can calculate:
 
-    \frac{0.443 V}{3.3 V} = 0.134 = 13.4 %
+    \frac{0.443 V}{3.3 V} = 0.134 = 13.4 \%
 
 ### Software PWM
 
@@ -226,8 +226,8 @@ For hardware PWM we have to use the [WiringPi Library](https://github.com/Wiring
 
 The duty cycle range of this library is not from 0 to 100, but from **0 - 1024**. Therefore, we need to adjust the maximum PWM Value:
 
-    13.4 % * 1024 = 137
-    
+    13.4 \% \cdot 1024 = 137
+
 Small example in Python:
 
 ```python
@@ -269,7 +269,7 @@ This is were the DAC comes in. It let's us control more VU Meters at a higher le
 
 ### Choosing a DAC
 
-There are plenty of choices but also some considerations to make: 
+There are plenty of choices but also some considerations to make:
 
 We need to have low voltages between 0 - 500 mV, and the supply source provides 3.3 V. That means we need a decent resolution.
 
@@ -297,13 +297,13 @@ At 12-bit we have 4096 steps of resolution:
 
 DACs also have a varying amount of channels. So the amount of channels depend on the amount of VU Meters you want to drive. And 12-bit DACs get significantly more expensive by increasing amount of channels.
 
-You also want to make sure that the DAC uses either SPI or I2C to communicate with the RPi via GPIOs. 
+You also want to make sure that the DAC uses either SPI or I2C to communicate with the RPi via GPIOs.
 
 Another consideration is the packaging: there are amazing microchips out there that can do cool stuff, but some of them are only available in a Surface Mount packaging which requires a particular set of tools and skills to handle. Therefore, I prefer to get nice big DIP or through hole components that are easy to wire up.
 
 The [MCP4725](http://ww1.microchip.com/downloads/en/DeviceDoc/22039d.pdf) is a well supported DAC with [I2C](https://en.wikipedia.org/wiki/I%C2%B2C) that is often sold with a [breakout board](http://lmgtfy.com/?q=mcp4725+breakout+board) and is therefore convenient to use. But it has only 1 channel, so you will be limited to drive only a single VU Meter from it.
 
-After some researching I decided to go for the [MCP4922](http://ww1.microchip.com/downloads/en/DeviceDoc/22250A.pdf) which has 12-bit and two channels, and comes in a nice big DIP package. The Raspberry Pi can communicate with the chip via SPI and you can find my [python library for it here](https://github.com/mrwunderbar666/python-rpi-mcp4922). 
+After some researching I decided to go for the [MCP4922](http://ww1.microchip.com/downloads/en/DeviceDoc/22250A.pdf) which has 12-bit and two channels, and comes in a nice big DIP package. The Raspberry Pi can communicate with the chip via SPI and you can find my [python library for it here](https://github.com/mrwunderbar666/python-rpi-mcp4922).
 
 ### Using MCP4725
 If you need only one channel you can go for the MCP4725 and drive the VU Meter at good and reliable accuracy.
@@ -320,7 +320,7 @@ Here is a simple wiring scheme:
     VDD         ->  3.3 V (Physical 1)
     VSS         ->  GND (Physical 6)
     VOUT        ->  VU Meter Positive
-    
+
 It is a good idea to add resistors to the SCL and SDA connections and also to add a bypass capacitor from the 3.3 V rail to the MCP4725. In breadboard it would look like this:
 
 ![Breadboard 2: MCP4725 Circuit](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/mcp4725_sketch_bb.png)
@@ -357,11 +357,11 @@ except KeyboardInterrupt:
 
 ```
 
-And as before, this should move the needle close to the maximum deflection and back. 
+And as before, this should move the needle close to the maximum deflection and back.
 
 ### Using MCP4922
 
-This is my go to solution, because of the reasons mentioned above. Please note that the MCP4922 supports SPI interface only, so we'll need three wires to control the chip. 
+This is my go to solution, because of the reasons mentioned above. Please note that the MCP4922 supports SPI interface only, so we'll need three wires to control the chip.
 
 #### Wiring
 
@@ -374,11 +374,11 @@ This is my go to solution, because of the reasons mentioned above. Please note t
     V Ref A    ->   3.3 V
     V Ref B    ->   3.3 V
     VSS        ->   GND
-    
+
     MCP4922    =>   VU Meters
     V Out A    ->   VU Meter 1
     V Out B    ->   VU Meter 2
-    
+
 For this ciruit it is also a good idea to add two bypass capacitors. The circuit get's slightly more complex:
 
 ![Breadboard 3: MCP4922 Breadboard Circuit](https://github.com/mrwunderbar666/Python-RPi-MCP4922/raw/master/documentation/mcp4922sketch_bb.png)
@@ -615,7 +615,7 @@ You can compare the results here:
 I am using a limited logistic growth function, that can be expressed as:
 
     B(x) = S - (S - B_0) \cdot e^{-k x}
-    
+
 _S_ = limit, _k_ = slope
 
 This function will never reach its limit of _S_, which comes in handy given that we don't want the VU-Meter to go beyond its maximum deflection.
@@ -674,5 +674,3 @@ and then add to your crontab via `sudo crontab -e`:
 ```bash
 @reboot bash \home\USER\startup.sh
 ```
-
-
