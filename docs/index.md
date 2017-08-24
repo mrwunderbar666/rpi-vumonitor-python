@@ -1,6 +1,12 @@
 # Description
 _Using Audio VU Meters to visualize CPU and Network usage of your Raspberry Pi._
 
+## Result
+_Click to watch_
+
+[![Click to watch](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/dac_speedtest.gif)](https://vid.me/Wm7bx)
+
+
 Webinterfaces to monitor your RPi are neat and useful, but what if you want to have an analog display that physically shows you what your RPi is doing? 
 
 There are many explanations out there that show how to use a small LCD Display to monitor your Raspberry Pi, but I haven't found any about using a VU meter.
@@ -198,9 +204,12 @@ If you execute this code, you should observe the needle of the VU-Meter to move 
 
 We can also incrementally increase the Duty Cycle with the help of [this little script in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/pwm_test.py).
 
-The result looks like this:
+#### The result looks like this:
+_Click to watch_
 
-# Insert GIF with jittery VU Meter
+[![PWM Linear](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/pwm_lin.gif)](https://vid.me/AphL2)
+
+[![PWM Speedtest](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/pwm_speedtest.gif)](https://vid.me/GC4Jb)
 
 Notice how the needles jitters and jumps occasionally. I guess this is caused by the software that doesn't produce a perfectly clean frequency of 200 Hz.
 
@@ -257,7 +266,12 @@ except KeyboardInterrupt:
 
 It should move the VU Meter needle close to its maximum deflection and then return to 0. You can also use the [wiringpi calibration tool in my github](https://github.com/mrwunderbar666/rpi-vumonitor-python/blob/master/calibration-tools/wiringpi_setpwm.py).
 
-# Insert Gif of VU Meter with Wiring Pi
+#### The result looks like this:
+_Click to watch_
+
+[![Wiring Pi Linear](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/wiringpi_lin.gif)](https://vid.me/mwaSy)
+
+[![Wiring Pi Speedtest](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/wiringpi_speedtest.gif)](https://vid.me/57oM4)
 
 Notice how there is almost no jitter using the hardware PWM. And now we also have up to 137 steps of control.
 
@@ -425,9 +439,15 @@ except KeyboardInterrupt:
 
 ```
 
+#### The result looks like this:
+
 And we can observer the beauty:
 
-# Insert Gif of DAC VU Meters moving
+_Click to watch_
+
+[![DAC Linear](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/dac_lin.gif)](https://vid.me/R3IVR)
+
+[![DAC Speedtest](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/dac_speedtest.gif)](https://vid.me/Wm7bx)
 
 ## 6: Calibration
 
@@ -606,9 +626,11 @@ I was using a linear scale at the beginning, but noticed that it was very hard t
 
 So I thought it might be better to have a [logarithmic growth function](http://www.math.umd.edu/~tjp/131%2011.1-2%20supplement%20logistic%20growth.pdf) as a base for the VU Meter Needle to move.
 
-You can compare the results here:
+### You can compare the results here:
 
-# Insert GIF VU-Meters Linear vs Logarithmic Scaling
+_Click to watch_
+
+[![DAC Linear vs Logarithmic](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/dac_lin_vs_log.gif)](https://vid.me/DoOnB)
 
 ### Some mathematical explanations
 
