@@ -89,7 +89,11 @@ Now that we have some basic specifications of the VU Meter, we can make some cal
 
 The current required for the needle to move is calculated using Ohm's Law:
 
-    I = \frac{V}{R}
+          V
+    I  =  -
+          R
+          
+![Ohms Law](https://github.com/mrwunderbar666/rpi-vumonitor-python/raw/master/docs/formulas/ohmslaw.png)
 
 Where I is the current, V is the voltage, and R is the resistance:
 
